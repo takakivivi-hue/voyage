@@ -6,7 +6,7 @@
    - casco do app (html/css/js): cache primeiro, atualizando por baixo.
      Abrir é instantâneo mesmo com 3G ruim de roaming.
    - navegação: tenta a rede, cai no index.html guardado.
-   - vendor/ (motor de OCR, 9 MB): cache primeiro, baixado só quando usado.
+   - leitor/ (motor de OCR, 9 MB): cache primeiro, baixado só quando usado.
    Os dados da viagem nunca passam por aqui — ficam em localStorage/IndexedDB. */
 
 const CACHE = 'voyage-v2';

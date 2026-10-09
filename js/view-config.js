@@ -169,10 +169,10 @@ const Config = (() => {
   async function prepararOcr(root) {
     const alvo = root.querySelector('[data-ocr-status]');
     const arquivos = [
-      'vendor/tesseract/tesseract.min.js', 'vendor/tesseract/worker.min.js',
-      'vendor/tesseract/tesseract-core-simd-lstm.js', 'vendor/tesseract/tesseract-core-simd-lstm.wasm',
-      'vendor/tesseract/tesseract-core-lstm.js', 'vendor/tesseract/tesseract-core-lstm.wasm',
-      'vendor/tessdata/por.traineddata.gz', 'vendor/tessdata/eng.traineddata.gz',
+      'leitor/tesseract/tesseract.min.js', 'leitor/tesseract/worker.min.js',
+      'leitor/tesseract/tesseract-core-simd-lstm.js', 'leitor/tesseract/tesseract-core-simd-lstm.wasm',
+      'leitor/tesseract/tesseract-core-lstm.js', 'leitor/tesseract/tesseract-core-lstm.wasm',
+      'leitor/tessdata/por.traineddata.gz', 'leitor/tessdata/eng.traineddata.gz',
     ];
     let ok = 0;
     for (const a of arquivos) {

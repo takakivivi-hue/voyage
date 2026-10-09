@@ -217,7 +217,7 @@ js/split.js         rateio e acerto (centavos inteiros, sem perda)
 js/ocr.js           leitura da nota pela foto
 js/pwa.js           instalação, atualização e diagnóstico offline
 js/view-*.js        uma tela por arquivo
-vendor/             motor de OCR offline (Tesseract + dados de idioma)
+leitor/             motor de OCR offline (Tesseract + dados de idioma)
 ```
 
 ## Design

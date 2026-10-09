@@ -10,7 +10,7 @@
 const Ocr = (() => {
   // absoluto a partir da página: o worker resolve caminhos contra ele mesmo,
   // e em subpasta (GitHub Pages) um caminho relativo apontaria para o lugar errado
-  const BASE = new URL('vendor/', document.baseURI).href;
+  const BASE = new URL('leitor/', document.baseURI).href;
   let workerP = null, onProg = null;
 
   /* ---------- carregamento sob demanda ---------- */
@@ -181,10 +181,10 @@ const Ocr = (() => {
 
   /* ---------- categoria ---------- */
   const PISTAS = {
-    'Alimentação': /restaurant|resto\b|bar\b|caf[eé]|coffee|lanch|pizza|padaria|bakery|burger|sushi|izakaya|ramen|churrasc|cantina|bistr[oô]|food|grill|mercado|supermerc|market|deli\b|doceria|sorvete|gelater/i,
+    'Alimentação': /restaurant|resto\b|bar\b|caf[eé]|coffee|lanch|pizza|padaria|bakery|burger|sushi|izakaya|ramen|churrasc|cantina|bistr[oô]|food|grill|mercado|supermerc|market|deli\b|doceria|sorvete|gelater|trattoria|osteria|taverna|brasserie|cervejaria|pub\b|steak|noodle|curry|tapas|pastel|a[çc]a[íi]|creper|wok\b|kitchen|cozinha|empor[ií]o|rotisseri/i,
     'Hospedagem': /hotel|hostel|pousada|\binn\b|ryokan|resort|airbnb|booking|hospedagem|di[áa]ria|lodge|guest\s*house/i,
     'Passeio': /tour|museu|museum|ingresso|ticket|parque|\bpark\b|\bzoo\b|aqu[áa]rio|aquarium|cinema|teatro|theat|show|passeio|entrada|admission|galeria|castle|templo|temple|shrine/i,
-    'Compras': /loja|store|\bshop|shopping|outlet|souvenir|lembran|boutique|duty\s*free|magazin|department/i,
+    'Compras': /loja|store|\bshop|shopping|outlet|souvenir|lembran|boutique|duty\s*free|magazin|department|livraria|papelaria|perfumaria|joalheri|[óo]tica\b/i,
     'Saúde': /farm[áa]cia|pharmac|drogaria|drugstore|cl[íi]nica|clinic|hospital|m[ée]dic|doctor|dentist|[óo]tica/i,
     'Carro': /posto|gasolin|combust[íi]vel|fuel|\bgas\b|shell|petrobras|ipiranga|estacionamento|parking|ped[áa]gio|toll|rent\s*a\s*car|locadora|avis|hertz/i,
     'Transporte': /t[áa]xi|\buber\b|metr[oô]|subway|trem|train|[ôo]nibus|\bbus\b|passagem|bilhete|\bjr\b|airport|aeroporto|ferry|balsa/i,
