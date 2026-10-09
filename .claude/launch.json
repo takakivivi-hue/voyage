@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "viagem",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "/Users/viviantakaki/Desktop/Coding/ViagemApp/serve.py",
+        "4173"
+      ],
+      "port": 4173
+    }
+  ]
+}
