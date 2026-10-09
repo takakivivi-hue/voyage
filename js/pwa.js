@@ -46,10 +46,24 @@ const Pwa = (() => {
     }
   }
 
+  /* A versão nova assume sozinha (o install chama skipWaiting), então esperar
+     pelo aviso de troca não funcionava: quando chegávamos aqui ele já havia
+     passado, e a página nunca recarregava. Recarregar é o que resolve. */
   function atualizar() {
-    if (!aguardando) return location.reload();
-    aguardando.postMessage('assumir');
-    navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true });
+    try { if (aguardando) aguardando.postMessage('assumir'); } catch (e) {}
+    setTimeout(() => location.reload(), 250);
+  }
+
+  /* Escape manual: procura versão nova, joga fora o guardado e recarrega. */
+  async function forcarAtualizacao() {
+    UI.toast('Procurando versão nova…');
+    try {
+      const r = await navigator.serviceWorker.getRegistration();
+      if (r) await r.update();
+      const nomes = (await caches.keys()).filter(k => k.startsWith('voyage-'));
+      await Promise.all(nomes.map(n => caches.delete(n)));
+    } catch (e) { /* recarrega de qualquer forma */ }
+    setTimeout(() => location.reload(), 400);
   }
 
   /* ---------- instalação ---------- */
@@ -95,23 +109,31 @@ const Pwa = (() => {
   }
 
   /* ---------- diagnóstico ---------- */
-  async function cacheTem(parte) {
+  /* Varre todos os caches do app em vez de um nome fixo: assim uma troca de
+     versão nunca faz o diagnóstico mentir. */
+  async function urlsNoCache() {
     try {
-      const c = await caches.open('voyage-v3');
-      const ks = await c.keys();
-      return ks.some(r => r.url.includes(parte));
-    } catch (e) { return false; }
+      const nomes = (await caches.keys()).filter(k => k.startsWith('voyage-'));
+      const listas = await Promise.all(nomes.map(async n => {
+        const ks = await caches.open(n).then(c => c.keys());
+        return ks.map(r => r.url);
+      }));
+      return listas.flat();
+    } catch (e) { return []; }
   }
 
   async function diagnostico() {
     const sw = temSW() && seguro() ? !!(await navigator.serviceWorker.getRegistration()) : false;
+    const urls = await urlsNoCache();
+    const casco = urls.filter(u => !u.includes('/leitor/'));
     return {
       https: seguro(),
       protocolo: location.protocol.replace(':', ''),
       host: location.host,
       sw,
-      offlinePronto: sw && (await cacheTem('index.html')),
-      ocrPronto: await cacheTem('traineddata'),
+      offlinePronto: sw && casco.some(u => /index\.html$|\/$/.test(u)),
+      arquivosGuardados: casco.length,
+      ocrPronto: urls.some(u => u.includes('traineddata')),
       instalado: instalado(),
       podeConvidar: podeConvidar(),
       iOS: iOS(),
@@ -142,5 +164,6 @@ const Pwa = (() => {
     registrar();
   }
 
-  return { iniciar, instalar, comoInstalar, diagnostico, atualizarBotoes, atualizar, instalado, seguro, iOS };
+  return { iniciar, instalar, comoInstalar, diagnostico, atualizarBotoes, atualizar,
+           forcarAtualizacao, instalado, seguro, iOS };
 })();

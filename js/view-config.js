@@ -64,7 +64,9 @@ const Config = (() => {
           <div data-diag><div class="tiny muted">verificando…</div></div>
           <div class="row wrap" style="margin-top:14px">
             <button class="btn gold sm" data-pwa-instalar>Como instalar</button>
+            <button class="btn ghost sm" data-pwa-atualizar>Atualizar o app</button>
           </div>
+          <div class="fhint" style="margin-top:10px">"Atualizar o app" busca a versão mais nova e recarrega. Seus dados não são apagados — só os arquivos do programa.</div>
         </div>
       </section>
 
@@ -153,8 +155,11 @@ const Config = (() => {
         d.sw ? 'O app sabe se abrir sem internet.'
              : (d.https ? 'O endereço está certo, mas este navegador recusou o registro. Em um Safari ou Chrome comum funciona.'
                         : 'Depende do https acima.')),
-      linhaDiag(d.offlinePronto, d.offlinePronto ? 'App guardado para uso offline' : 'App ainda não guardado',
-        d.offlinePronto ? 'Abre no avião, no metrô, sem sinal.' : 'Abra o app uma vez com internet em um endereço https.'),
+      linhaDiag(d.offlinePronto,
+        d.offlinePronto ? `App guardado para uso offline (${d.arquivosGuardados} arquivos)` : 'App ainda não guardado',
+        d.offlinePronto ? 'Abre no avião, no metrô, sem sinal.'
+          : (d.arquivosGuardados ? `${d.arquivosGuardados} arquivos guardados, mas a página principal não. Use "Atualizar o app" abaixo.`
+                                 : 'Toque em "Atualizar o app" abaixo e abra de novo.')),
       linhaDiag(d.ocrPronto, d.ocrPronto ? 'Leitor de notas guardado' : 'Leitor de notas não guardado',
         d.ocrPronto ? '' : 'Use o botão abaixo antes de viajar.'),
       linhaDiag(d.instalado, d.instalado ? 'Rodando como app instalado' : 'Rodando dentro do navegador',
@@ -253,6 +258,11 @@ const Config = (() => {
       const vj = e.target.closest('[data-viajante]');
       if (vj) return ViewAcerto.editarViajante(vj.dataset.viajante);
       if (e.target.closest('[data-pwa-instalar]')) return Pwa.instalar();
+      if (e.target.closest('[data-pwa-atualizar]')) {
+        if (await UI.confirmar('Buscar a versão mais nova e recarregar? Seus dados da viagem não são apagados.', { ok: 'Atualizar' }))
+          return Pwa.forcarAtualizacao();
+        return;
+      }
       if (e.target.closest('[data-preparar-ocr]')) return prepararOcr(sh.body);
       if (e.target.closest('[data-export]')) return exportar();
       if (e.target.closest('[data-limpar-gastos]')) {

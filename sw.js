@@ -9,7 +9,7 @@
    - leitor/ (motor de OCR, 9 MB): cache primeiro, baixado só quando usado.
    Os dados da viagem nunca passam por aqui — ficam em localStorage/IndexedDB. */
 
-const CACHE = 'voyage-v3';
+const CACHE = 'voyage-v4';
 
 const CASCO = [
   './', './index.html', './styles.css', './manifest.json',
@@ -23,8 +23,14 @@ const CASCO = [
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
     const c = await caches.open(CACHE);
-    // addAll falha inteiro se um arquivo falhar; aqui cada um é independente
-    await Promise.all(CASCO.map(u => c.add(u).catch(() => {})));
+    // fetch+put em vez de Cache.add(): o add() rejeita calado em algumas
+    // versões do Safari e o app acabava achando que não guardou nada
+    await Promise.all(CASCO.map(async u => {
+      try {
+        const res = await fetch(u, { cache: 'reload' });
+        if (res && res.ok) await c.put(u, res);
+      } catch (err) { /* um arquivo a menos não invalida o resto */ }
+    }));
     self.skipWaiting();
   })());
 });

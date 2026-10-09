@@ -63,9 +63,18 @@ const UI = (() => {
   function toast(msg) {
     if (!tEl) { tEl = el('<div class="toast"></div>'); document.body.appendChild(tEl); }
     tEl.textContent = msg;
+    // cada aviso começa sem ação: um toast já invisível não pode continuar
+    // interceptando toques perto da barra de baixo
+    tEl.onclick = null;
+    tEl.style.pointerEvents = 'none';
+    tEl.style.cursor = '';
     requestAnimationFrame(() => tEl.classList.add('on'));
     clearTimeout(tTimer);
-    tTimer = setTimeout(() => tEl.classList.remove('on'), 2200);
+    tTimer = setTimeout(() => {
+      tEl.classList.remove('on');
+      tEl.onclick = null;
+      tEl.style.pointerEvents = 'none';
+    }, 2200);
   }
 
   /* --- sheet (bottom sheet no mobile, diálogo central no desktop) --- */
