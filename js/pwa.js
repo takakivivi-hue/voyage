@@ -97,7 +97,7 @@ const Pwa = (() => {
   /* ---------- diagnóstico ---------- */
   async function cacheTem(parte) {
     try {
-      const c = await caches.open('voyage-v2');
+      const c = await caches.open('voyage-v3');
       const ks = await c.keys();
       return ks.some(r => r.url.includes(parte));
     } catch (e) { return false; }

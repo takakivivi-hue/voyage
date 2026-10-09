@@ -9,7 +9,7 @@
    - leitor/ (motor de OCR, 9 MB): cache primeiro, baixado só quando usado.
    Os dados da viagem nunca passam por aqui — ficam em localStorage/IndexedDB. */
 
-const CACHE = 'voyage-v2';
+const CACHE = 'voyage-v3';
 
 const CASCO = [
   './', './index.html', './styles.css', './manifest.json',
