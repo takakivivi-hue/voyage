@@ -71,6 +71,55 @@ const ViewAcerto = (() => {
     UI.toast('Acerto registrado');
   }
 
+  /* ---------- resumo em texto para mandar no grupo ---------- */
+  /* Sem alinhamento por espaços: o WhatsApp quebra a linha onde quiser e
+     colunas viram bagunça. Uma informação por linha resolve. */
+  function texto() {
+    const s = Store.state, p = periodo(), res = calcular();
+    const L = [];
+
+    L.push(`ACERTO — ${s.viagem.titulo || 'Viagem'}`);
+    const n = s.viajantes.length;
+    L.push(`${p.rotulo || `${UI.dmy(p.de)} a ${UI.dmy(p.ate)}`} · total R$ ${R(res.totalC)} entre ${n} ${n === 1 ? 'pessoa' : 'pessoas'}`);
+
+    L.push('');
+    L.push('SALDO DE CADA UM');
+    res.linhas.forEach(l => {
+      const quite = Math.abs(l.saldoC) < 1;
+      L.push(`• ${l.nome}: ${quite ? 'está quite' : `${l.saldoC > 0 ? 'tem a receber' : 'tem a pagar'} R$ ${R(Math.abs(l.saldoC))}`}`);
+      L.push(`  (pagou R$ ${R(l.pagouC)}, devia R$ ${R(l.consumiuC)})`);
+    });
+
+    L.push('');
+    if (res.transferencias.length) {
+      L.push('PARA ACERTAR');
+      res.transferencias.forEach((x, i) => L.push(`${i + 1}. ${x.deNome} paga R$ ${R(x.valorC)} para ${x.paraNome}`));
+    } else {
+      L.push('Ninguém deve nada — as contas estão equilibradas.');
+    }
+
+    if (res.semPagador) {
+      L.push('');
+      L.push(`Atenção: ${res.semPagador} gasto${res.semPagador === 1 ? '' : 's'} sem pagador definido (R$ ${R(res.semPagadorC)}) ficaram de fora desta conta.`);
+    }
+
+    L.push('');
+    L.push(`Gerado em ${UI.dmy(UI.hoje())}.`);
+    return L.join('\n');
+  }
+
+  function compartilhar() {
+    if (!Store.state.viajantes.length) return UI.toast('Cadastre os viajantes primeiro');
+    const res = calcular();
+    if (!res.totalC) return UI.toast('Nenhum gasto no período escolhido');
+    UI.enviarTexto({
+      title: 'Resumo do acerto',
+      sub: UI.podeCompartilhar() ? 'Confira e envie para o grupo' : 'Copie e cole no grupo',
+      texto: texto(),
+      nomeBotao: 'Enviar para o grupo',
+    });
+  }
+
   /* ---------- detalhe de um viajante ---------- */
   function abrirViajante(id) {
     const s = Store.state, p = periodo();
@@ -197,7 +246,12 @@ const ViewAcerto = (() => {
       </div>` : `<div class="card center" style="padding:22px">
         <div style="font-family:var(--serif);font-size:17px">Ninguém deve nada</div>
         <div class="tiny muted" style="margin-top:4px">As contas do período estão equilibradas.</div></div>`}
-      <div class="row" style="margin-top:10px"><button class="btn ghost sm" data-acerto>Registrar pagamento entre viajantes</button></div>
+      <div class="row wrap" style="margin-top:12px;gap:8px">
+        <button class="btn gold sm" data-compartilhar>
+          <svg viewBox="0 0 24 24"><path d="M12 16V4M8 7.5L12 3.5l4 4"/><path d="M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>
+          Compartilhar resumo</button>
+        <button class="btn ghost sm" data-acerto>Registrar pagamento</button>
+      </div>
     </section>`;
 
     return topo + resumo + pessoas + acerto;
@@ -231,6 +285,7 @@ const ViewAcerto = (() => {
       if (App.rota !== 'acerto') return;
       if (e.target.closest('[data-novo-p]')) return novoViajante();
       if (e.target.closest('[data-per]')) return escolherPeriodo();
+      if (e.target.closest('[data-compartilhar]')) { UI.haptic(); return compartilhar(); }
       if (e.target.closest('[data-acerto]')) return registrarAcerto();
       if (e.target.closest('[data-corrigir]')) { location.hash = '#/gastos'; Gastos.filtrarSemPagador(); return; }
       const pq = e.target.closest('[data-pq]');
@@ -242,5 +297,6 @@ const ViewAcerto = (() => {
     });
   }
 
-  return { render, bind, titulo: 'Acerto', fab: () => novoViajante(), editarViajante, novoViajante };
+  return { render, bind, titulo: 'Acerto', fab: () => novoViajante(),
+           editarViajante, novoViajante, compartilhar, texto };
 })();

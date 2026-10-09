@@ -153,7 +153,15 @@ A aba **Acerto** fecha a conta:
 - o **saldo** de cada viajante — quem tem a receber e quem tem a pagar;
 - **como acertar**: a menor lista possível de transferências ("Diego paga
   Vivian R$ 250,00"). Toque numa linha para registrar que o pagamento foi feito,
-  e o saldo se atualiza.
+  e o saldo se atualiza;
+- **Compartilhar resumo**: monta um texto pronto para o grupo, com o saldo de
+  cada um e a lista de quem paga quem. No celular abre direto a tela de
+  compartilhar (WhatsApp, e-mail); no computador, copia para colar. As linhas
+  cabem em 40 colunas de propósito, para não quebrarem no WhatsApp. Respeita o
+  período escolhido — dá para mandar o fechamento de um dia só.
+
+Como o app não sincroniza entre aparelhos, esse botão é o que mantém o grupo
+informado: uma pessoa é o caixa e manda o resumo no fim do dia.
 
 Tudo acerta em reais. As contas são feitas em centavos inteiros, então a soma
 das partes bate exatamente com o total — R$ 100 entre 7 vira 4×14,29 + 3×14,28,

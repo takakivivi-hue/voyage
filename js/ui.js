@@ -243,6 +243,61 @@ const UI = (() => {
 
   const kb = b => !b ? '' : b < 1024 * 1024 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
 
+  /* A área de transferência moderna exige contexto seguro; o textarea escondido
+     é o jeito antigo, que funciona também em http da rede local. */
+  async function copiar(txt) {
+    try {
+      await navigator.clipboard.writeText(txt);
+      return true;
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, txt.length);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  const podeCompartilhar = () => typeof navigator.share === 'function';
+
+  /* Abre a folha de compartilhamento do celular (WhatsApp, e-mail, etc.). */
+  async function compartilhar(texto, titulo) {
+    if (!podeCompartilhar()) return false;
+    try {
+      await navigator.share({ title: titulo, text: texto });
+      return true;
+    } catch (e) {
+      return false; // o usuário cancelou — não é erro
+    }
+  }
+
+  /* Pré-visualização de um texto pronto para enviar. */
+  function enviarTexto({ title, sub, texto, nomeBotao = 'Compartilhar' }) {
+    const sh = sheet({
+      title, sub,
+      body: `<div class="preview-txt">${esc(texto)}</div>`,
+      footer: `${podeCompartilhar() ? `<button class="btn gold" data-share>${esc(nomeBotao)}</button>` : ''}
+               <button class="btn ghost" data-copy>Copiar texto</button>`,
+    });
+    const share = sh.el.querySelector('[data-share]');
+    if (share) share.onclick = async () => {
+      haptic(12);
+      const ok = await compartilhar(texto, title);
+      if (ok) sh.close();
+    };
+    sh.el.querySelector('[data-copy]').onclick = async () => {
+      haptic(12);
+      toast((await copiar(texto)) ? 'Texto copiado — cole no grupo' : 'Não consegui copiar; selecione o texto acima');
+    };
+    return sh;
+  }
+
   /* Iniciais para o avatar do viajante. */
   function iniciais(nome) {
     const ps = String(nome || '?').trim().split(/\s+/);
@@ -400,5 +455,6 @@ const UI = (() => {
     ? `<span class="att-badge"><svg viewBox="0 0 24 24"><path d="M21 12.5l-8.5 8.5a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8"/></svg>${ids.length}</span>` : '';
 
   return { esc, el, n2, nk, num, conv, brlDe, brl, fx, cot, sim, hoje, dmy, dm, extenso, diasEntre, noPeriodo,
-           MESES, DIAS, haptic, toast, sheet, confirmar, form, prompt, kb, badgeAnexos, av, iniciais };
+           MESES, DIAS, haptic, toast, sheet, confirmar, form, prompt, kb, badgeAnexos, av, iniciais,
+           copiar, compartilhar, podeCompartilhar, enviarTexto };
 })();
