@@ -108,6 +108,26 @@ const Pwa = (() => {
     });
   }
 
+  /* ---------- proteção dos dados ---------- */
+  /* Apps na tela de início escapam da limpeza de 7 dias do iOS, mas os dados
+     ainda podem ser descartados quando o aparelho fica sem espaço. O modo
+     persistente isenta a origem disso. O pedido precisa ser refeito a cada
+     abertura, por isso roda no iniciar(). */
+  async function protegerDados() {
+    try {
+      if (!navigator.storage || !navigator.storage.persist) return null;
+      if (await navigator.storage.persisted()) return true;
+      return await navigator.storage.persist();
+    } catch (e) { return null; }
+  }
+
+  async function espacoUsado() {
+    try {
+      const e = await navigator.storage.estimate();
+      return e && e.usage ? e.usage : 0;
+    } catch (e) { return 0; }
+  }
+
   /* ---------- diagnóstico ---------- */
   /* Varre todos os caches do app em vez de um nome fixo: assim uma troca de
      versão nunca faz o diagnóstico mentir. */
@@ -135,6 +155,9 @@ const Pwa = (() => {
       arquivosGuardados: casco.length,
       ocrPronto: urls.some(u => u.includes('traineddata')),
       instalado: instalado(),
+      persistente: await (navigator.storage && navigator.storage.persisted
+        ? navigator.storage.persisted().catch(() => null) : Promise.resolve(null)),
+      espaco: await espacoUsado(),
       podeConvidar: podeConvidar(),
       iOS: iOS(),
       online: navigator.onLine,
@@ -162,8 +185,9 @@ const Pwa = (() => {
     window.addEventListener('offline', pintarRede);
     pintarRede();
     registrar();
+    protegerDados();
   }
 
   return { iniciar, instalar, comoInstalar, diagnostico, atualizarBotoes, atualizar,
-           forcarAtualizacao, instalado, seguro, iOS };
+           forcarAtualizacao, protegerDados, instalado, seguro, iOS };
 })();

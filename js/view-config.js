@@ -164,6 +164,11 @@ const Config = (() => {
         d.ocrPronto ? '' : 'Use o botão abaixo antes de viajar.'),
       linhaDiag(d.instalado, d.instalado ? 'Rodando como app instalado' : 'Rodando dentro do navegador',
         d.instalado ? 'Tela cheia, sem barra de endereço.' : (d.iOS ? 'No Safari: Compartilhar → Adicionar à Tela de Início.' : 'Menu do navegador → Instalar app.')),
+      d.persistente === null ? '' : linhaDiag(d.persistente,
+        d.persistente ? 'Dados protegidos' : 'Dados sem proteção reforçada',
+        d.persistente
+          ? `Não são apagados nem se o celular ficar sem espaço.${d.espaco ? ` Ocupando ${UI.kb(d.espaco)}.` : ''}`
+          : 'Apps na tela de início já escapam da limpeza automática do iPhone, mas exporte um backup de vez em quando.'),
       d.online ? '' : linhaDiag(false, 'Sem internet agora', 'Os dados continuam no aparelho; só a sincronia de arquivos novos espera.'),
     ].join('');
     Pwa.atualizarBotoes();
