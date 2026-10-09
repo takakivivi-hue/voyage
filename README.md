@@ -47,9 +47,32 @@ Na prática:
 Para a viagem, o que vale é a terceira linha. A pasta inteira é estática — sem
 build, sem servidor — então qualquer hospedagem gratuita serve:
 
-- **Netlify Drop** (`app.netlify.com/drop`): arraste a pasta `ViagemApp` na
-  página. Sai um endereço `https://` em segundos, sem precisar de conta.
-- **GitHub Pages** ou **Vercel**, se quiser algo mais permanente.
+### Publicando no GitHub Pages
+
+O repositório já está inicializado e com o primeiro commit feito.
+
+1. Crie um repositório vazio em <https://github.com/new> com o nome `voyage`,
+   marcado como **Public** e **sem** README, .gitignore ou licença.
+   (Pages em repositório privado só funciona em conta paga. O código fica
+   público; os seus dados de viagem não — eles nunca entram no repositório,
+   vivem no navegador do seu celular.)
+2. No terminal, trocando `SEU-USUARIO`:
+
+   ```bash
+   git remote add origin https://github.com/SEU-USUARIO/voyage.git
+   git push -u origin main
+   ```
+
+3. No repositório: **Settings → Pages → Source: Deploy from a branch →
+   `main` / `(root)` → Save**.
+4. Em um ou dois minutos o app está em
+   `https://SEU-USUARIO.github.io/voyage/`.
+
+Quando o app mudar, um `git push` publica a versão nova; quem já tem o app
+instalado recebe o aviso de atualização na próxima vez que abrir.
+
+O arquivo `.nojekyll` na raiz existe para o Pages publicar os arquivos como
+estão, sem passar pelo Jekyll.
 
 Com o endereço `https://` aberto no celular:
 
