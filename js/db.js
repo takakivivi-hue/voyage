@@ -54,11 +54,10 @@ const Att = (() => {
   const info = id => meta.get(id) || null;
 
   async function abrir(id) {
-    const r = await get(id);
-    if (!r) return UI.toast('Arquivo não encontrado');
-    const url = URL.createObjectURL(r.blob);
-    window.open(url, '_blank');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    let r = null;
+    try { r = await get(id); } catch (e) { /* tratado abaixo */ }
+    if (!r || !r.blob) return UI.toast('Arquivo não encontrado — anexe de novo');
+    UI.verArquivo({ nome: r.nome, tipo: r.tipo, blob: r.blob });
   }
 
   async function registrar(file) {

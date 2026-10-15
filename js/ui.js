@@ -78,6 +78,7 @@ const UI = (() => {
   }
 
   /* --- sheet (bottom sheet no mobile, diálogo central no desktop) --- */
+  let abertas = 0;
   function sheet({ title, sub, body, footer, onClose }) {
     const layer = document.getElementById('layer');
     const scrim = el('<div class="scrim"></div>');
@@ -94,6 +95,7 @@ const UI = (() => {
     if (footer) { const f = el('<div class="sheet-foot"></div>'); if (typeof footer === 'string') f.innerHTML = footer; else f.appendChild(footer); s.appendChild(f); }
 
     layer.append(scrim, s);
+    abertas++;
     document.body.style.overflow = 'hidden';
     requestAnimationFrame(() => { scrim.classList.add('on'); s.classList.add('on'); });
 
@@ -101,7 +103,8 @@ const UI = (() => {
     function close(val) {
       if (closed) return; closed = true;
       scrim.classList.remove('on'); s.classList.remove('on');
-      document.body.style.overflow = '';
+      abertas = Math.max(0, abertas - 1);
+      if (!abertas) document.body.style.overflow = '';
       setTimeout(() => { scrim.remove(); s.remove(); }, 340);
       document.removeEventListener('keydown', onKey);
       onClose && onClose(val);
@@ -251,6 +254,65 @@ const UI = (() => {
   }
 
   const kb = b => !b ? '' : b < 1024 * 1024 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+
+  /* Mostra um anexo sem sair do app.
+     window.open() é bloqueado dentro de um app instalado na tela de início do
+     iPhone, então nada de abrir aba nova: a imagem ou o PDF são desenhados
+     aqui mesmo, e quem quiser levar o arquivo para outro app usa o botão de
+     compartilhar do próprio sistema. */
+  function verArquivo({ nome, tipo = '', blob }) {
+    if (!blob || !blob.size) {
+      return sheet({ title: nome || 'Arquivo',
+        body: '<div class="empty">Este arquivo está vazio ou se perdeu. Anexe de novo.</div>' });
+    }
+
+    const url = URL.createObjectURL(blob);
+    const ehImagem = /^image\//.test(tipo) || /\.(png|jpe?g|heic|heif|webp|gif|avif)$/i.test(nome || '');
+    const ehPdf = /pdf/i.test(tipo) || /\.pdf$/i.test(nome || '');
+    const ehTexto = /^text\//.test(tipo) || /\.(txt|csv|md)$/i.test(nome || '');
+
+    let corpo;
+    if (ehImagem) corpo = `<img class="visor-img" src="${url}" alt="${esc(nome || '')}">`;
+    else if (ehPdf) corpo = `<iframe class="visor-pdf" src="${url}" title="${esc(nome || '')}"></iframe>
+      <div class="fhint" style="margin-top:10px">Se o PDF aparecer em branco, use <b>Abrir em outro app</b> abaixo — alguns PDFs só abrem no leitor do sistema.</div>`;
+    else if (ehTexto) corpo = `<div class="preview-txt" data-texto>carregando…</div>`;
+    else corpo = `<div class="empty">Este tipo de arquivo não tem visualização aqui dentro.<br>Use <b>Abrir em outro app</b> abaixo.</div>`;
+
+    const arquivo = new File([blob], nome || 'arquivo', { type: tipo || 'application/octet-stream' });
+    const podeMandar = typeof navigator.canShare === 'function' &&
+      (() => { try { return navigator.canShare({ files: [arquivo] }); } catch (e) { return false; } })();
+
+    const sh = sheet({
+      title: nome || 'Arquivo',
+      sub: `${tipo || 'arquivo'} · ${kb(blob.size)}`,
+      body: `<div class="visor">${corpo}</div>`,
+      footer: `${podeMandar ? '<button class="btn gold" data-abrir>Abrir em outro app</button>' : ''}
+               <button class="btn ghost" data-aba>Abrir numa aba</button>`,
+      onClose: () => setTimeout(() => URL.revokeObjectURL(url), 1000),
+    });
+
+    if (ehTexto) blob.text().then(t => {
+      const alvo = sh.body.querySelector('[data-texto]');
+      if (alvo) alvo.textContent = t.slice(0, 20000);
+    }).catch(() => {});
+
+    const bAbrir = sh.el.querySelector('[data-abrir]');
+    if (bAbrir) bAbrir.onclick = async () => {
+      haptic(12);
+      try { await navigator.share({ files: [arquivo], title: nome }); }
+      catch (e) { if (e && e.name !== 'AbortError') toast('Não consegui compartilhar este arquivo'); }
+    };
+
+    // o clique num link conta como gesto do usuário e passa onde window.open não passa
+    sh.el.querySelector('[data-aba]').onclick = () => {
+      haptic();
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+    };
+
+    return sh;
+  }
 
   /* A área de transferência moderna exige contexto seguro; o textarea escondido
      é o jeito antigo, que funciona também em http da rede local. */
@@ -465,5 +527,5 @@ const UI = (() => {
 
   return { esc, el, n2, nk, num, conv, brlDe, brl, fx, cot, sim, hoje, dmy, dm, extenso, diasEntre, noPeriodo,
            MESES, DIAS, haptic, toast, sheet, confirmar, form, prompt, kb, badgeAnexos, av, iniciais,
-           copiar, compartilhar, podeCompartilhar, enviarTexto };
+           copiar, compartilhar, podeCompartilhar, enviarTexto, verArquivo };
 })();

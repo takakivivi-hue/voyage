@@ -530,3 +530,14 @@ input[type="date"],input[type="time"]{ min-height:43px }
   background:var(--glass-2); border:1px solid var(--hair);
   border-radius:var(--r-sm); padding:14px; max-height:52dvh; overflow-y:auto;
 }
+
+/* ---------- Visualizador de anexos ---------- */
+.visor{ display:flex; flex-direction:column; min-height:40dvh }
+.visor-img{
+  width:100%; height:auto; max-height:66dvh; object-fit:contain;
+  border-radius:var(--r-sm); background:var(--hair-2);
+}
+.visor-pdf{
+  width:100%; height:66dvh; border:1px solid var(--hair);
+  border-radius:var(--r-sm); background:var(--offwhite);
+}
